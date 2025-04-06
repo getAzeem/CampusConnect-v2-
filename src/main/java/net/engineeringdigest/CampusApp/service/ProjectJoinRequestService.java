@@ -9,6 +9,8 @@ import net.engineeringdigest.CampusApp.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -51,30 +53,64 @@ public class ProjectJoinRequestService {
         request.setPortfolio(portfolio);
         request.setDescription(description);
         request.setSkills(skills);
+        request.setOwnerofproject(project.getOwner());
 
         requestRepository.save(request);
     }
 
     public List<ProjectJoinRequest> getRequestsForProjectOwner(String ownerUsername) {
         User owner = userRepository.findByUsername(ownerUsername);
-        return requestRepository.findAllByProjectIdIn(owner.getProjects());
+        if (owner == null) {
+            System.out.println("Owner not found with username: " + ownerUsername);
+            return Collections.emptyList();
+        }
+
+        System.out.println("Owner found: " + owner.getUsername());
+        List<ProjectJoinRequest> requests = requestRepository.findAllByOwnerofproject(owner.getUid());
+
+        if (requests.isEmpty()) {
+            System.out.println("No requests found for owner: " + ownerUsername);
+        }
+
+        return requests;
     }
 
-    public void acceptRequest(String requesterId, String projectName) {
-        ProjectJoinRequest request = requestRepository.findByRequesterIdAndProjectName(requesterId, projectName);
+
+    public void acceptRequest(String requesterUsername, String projectName) {
+        ProjectJoinRequest request = requestRepository.findByRequesterUsernameAndProjectName(requesterUsername, projectName);
         if (request == null) throw new RuntimeException("Request not found");
 
         Project project = projectRepository.findByPname(projectName);
         if (project == null) throw new RuntimeException("Project not found");
 
-        Optional<User> userOptional = userRepository.findById(requesterId);
+        User user = userRepository.findByUsername(requesterUsername);
+        if (user != null) {
+            // Ensure contributor list is initialized to avoid NullPointerException
+            if (project.getContributor() == null) {
+                project.setContributor(new ArrayList<>());
+            }
 
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();  // You can now safely use the User object
-            // Perform actions with the user
+            // Ensure contributornames list is initialized
+            if (project.getContributornames() == null) {
+                project.setContributornames(new ArrayList<>());
+            }
+
+            // Add user to the contributor list if not already present
             if (!project.getContributor().contains(user.getUid())) {
                 project.getContributor().add(user.getUid());
             }
+
+            // Add the contributor's name to the contributornames list if not already present
+            if (!project.getContributornames().contains(user.getUsername())) {
+                project.getContributornames().add(user.getUsername());
+            }
+
+            // Ensure joinedProjects list is initialized for the user
+            if (user.getJoinedProjects() == null) {
+                user.setJoinedProjects(new ArrayList<>());
+            }
+
+            // Add project ID to the user's joined projects list if not already present
             if (!user.getJoinedProjects().contains(project.getPid())) {
                 user.getJoinedProjects().add(project.getPid());
             }
@@ -84,16 +120,15 @@ public class ProjectJoinRequestService {
             requestRepository.delete(request);
         } else {
             // Handle the case where the user is not found
-            System.out.println("User not found with ID: " + requesterId);
+            System.out.println("User not found with username: " + requesterUsername);
         }
-
-
-
-
     }
 
-    public void denyRequest(String requesterId, String projectName) {
-        ProjectJoinRequest request = requestRepository.findByRequesterIdAndProjectName(requesterId, projectName);
+
+
+
+    public void denyRequest(String requesterUsername, String projectName) {
+        ProjectJoinRequest request = requestRepository.findByRequesterUsernameAndProjectName(requesterUsername, projectName);
         if (request == null) throw new RuntimeException("Request not found");
 
         requestRepository.delete(request);

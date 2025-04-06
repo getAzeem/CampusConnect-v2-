@@ -18,6 +18,7 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("/project")
+@CrossOrigin(origins = "http://localhost:5173")
 public class ProjectController {
 
     // Service dependencies

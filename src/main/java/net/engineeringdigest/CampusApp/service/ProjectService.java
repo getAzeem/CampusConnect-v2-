@@ -39,10 +39,16 @@ public class ProjectService {
             // Set the owner (ObjectId) of the project
             project.setOwner(owner.getUid());
 
+            if (project.getContributornames() == null) {
+                project.setContributornames(new ArrayList<>());
+            }
+            if (!project.getContributornames().contains(project.getPname())) {
+                project.getContributornames().add(project.getPname());
+            }
+
             // Save the project in the database
             projectRepository.save(project);
 
-            // Add the project name to the user's projectNames list
             if (owner.getProjectNames() == null) {
                 owner.setProjectNames(new ArrayList<>());
             }
@@ -50,7 +56,7 @@ public class ProjectService {
                 owner.getProjectNames().add(project.getPname());
             }
 
-            // Add the project ID to the user's projects list
+// Add the project ID to the user's projects list
             if (owner.getProjects() == null) {
                 owner.setProjects(new ArrayList<>());
             }

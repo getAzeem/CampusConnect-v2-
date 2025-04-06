@@ -33,4 +33,6 @@ public class ProjectJoinRequest {
 
     private String description; // What the user is bringing to the table
     private List<String> skills; // Automatically fetched from user's profile
+
+    private String ownerofproject;
 }

@@ -13,8 +13,12 @@ public interface ProjectJoinRequestRepository extends MongoRepository<ProjectJoi
     List<ProjectJoinRequest> findByProjectId(String projectId);
     List<ProjectJoinRequest> findAllByProjectIdIn(List<String> projectIds);
 
-    ProjectJoinRequest findByRequesterIdAndProjectName(String requesterId, String projectName);
+    ProjectJoinRequest findByRequesterUsernameAndProjectName(String requesterId, String projectName);
 
     List<ProjectJoinRequest> findAllByRequesterUsername(String requesterUsername);
+
+    public List<ProjectJoinRequest> findAllByOwnerofproject(String userId);
+
+
 
 }

@@ -15,6 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/join-request")
+@CrossOrigin(origins = "http://localhost:5173")
 public class ProjectJoinRequestController {
 
     @Autowired
@@ -65,7 +66,7 @@ public class ProjectJoinRequestController {
     @GetMapping("/my-requests")
     public List<ProjectJoinRequest> getMyJoinRequests() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        return requestRepository.findAllByRequesterUsername(username);
+        return requestService.getRequestsForProjectOwner(username);
     }
 
 
@@ -80,11 +81,11 @@ public class ProjectJoinRequestController {
     // ✅ Accept a request
     @PostMapping("/accept")
     public String acceptRequest(
-            @RequestParam String requesterId,
+            @RequestParam String requesterUsername,
             @RequestParam String projectName
     ) {
         try {
-            requestService.acceptRequest(requesterId, projectName);
+            requestService.acceptRequest(requesterUsername, projectName);
             return "Request accepted successfully";
         } catch (RuntimeException e) {
             return "Error: " + e.getMessage();
@@ -94,11 +95,11 @@ public class ProjectJoinRequestController {
     // ✅ Deny a request
     @PostMapping("/deny")
     public String denyRequest(
-            @RequestParam String requesterId,
+            @RequestParam String requesterusername,
             @RequestParam String projectName
     ) {
         try {
-            requestService.denyRequest(requesterId, projectName);
+            requestService.denyRequest(requesterusername, projectName);
             return "Request denied";
         } catch (RuntimeException e) {
             return "Error: " + e.getMessage();
