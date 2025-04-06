@@ -32,12 +32,13 @@ public class ProjectService {
         try {
             // Find the owner user by username
             User owner = userRepository.findByUsername(ownerUsername);
+
             if (owner == null) {
                 throw new RuntimeException("User with username " + ownerUsername + " not found.");
             }
 
             // Set the owner (ObjectId) of the project
-            project.setOwner(owner.getUid());
+            project.setOwner(owner.getFullName());
 
             if (project.getContributornames() == null) {
                 project.setContributornames(new ArrayList<>());
